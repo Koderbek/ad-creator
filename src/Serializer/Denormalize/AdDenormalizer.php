@@ -62,7 +62,7 @@ class AdDenormalizer implements DenormalizerInterface
      *
      * @return bool
      */
-    public function supportsDenormalization($data, string $type, $format = null)
+    public function supportsDenormalization($data, string $type, $format = null): bool
     {
         return new $type() instanceof Ad;
     }

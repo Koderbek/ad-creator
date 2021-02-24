@@ -91,7 +91,7 @@ class AdController extends AbstractController
             $em->persist($entity);
             $em->flush();
 
-            $json = $serializer->serialize($entity, "json", ['groups' => ["create"]]);
+            $json = $serializer->serialize($entity, 'json', ['groups' => ['create']]);
 
             return $this->createResponse($json);
         } catch (\Throwable $exception) {
@@ -116,7 +116,7 @@ class AdController extends AbstractController
     public function index(Request $request, SerializerInterface $serializer, EntityManagerInterface $em): Response
     {
         $entities = $em->getRepository(Ad::class)->findByFilter($request->query->all());
-        $json = $serializer->serialize($entities, "json", ['groups' => ["list"]]);
+        $json = $serializer->serialize($entities, 'json', ['groups' => ['list']]);
 
         return $this->createResponse($json);
     }
@@ -125,16 +125,38 @@ class AdController extends AbstractController
      * @Route("/{id}", methods={"GET"}, requirements={"id": "\d+"})
      *
      * @param int $id
+     * @param Request $request
      * @param SerializerInterface $serializer
      * @param EntityManagerInterface $em
      *
      * @return Response
      */
-    public function show(int $id, SerializerInterface $serializer, EntityManagerInterface $em): Response
-    {
+    public function show(
+        int $id,
+        Request $request,
+        SerializerInterface $serializer,
+        EntityManagerInterface $em
+    ): Response {
         $entity = $em->getRepository(Ad::class)->find($id);
-        $json = $serializer->serialize($entity, "json", ['groups' => ["show"]]);
+        $json = $serializer->serialize($entity, 'json', ['groups' => $this->getShowGroups($request->query->all())]);
 
         return $this->createResponse($json);
+    }
+
+    /**
+     * @param array $params
+     * @return array
+     */
+    private function getShowGroups(array $params): array
+    {
+        $groups[] = 'show';
+
+        if (isset($params['fields'])) {
+            foreach ($params['fields'] as $field) {
+                $groups[] = 'show:' . $field;
+            }
+        }
+
+        return $groups;
     }
 }

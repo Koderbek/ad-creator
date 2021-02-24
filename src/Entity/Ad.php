@@ -75,7 +75,7 @@ class Ad
     }
 
     /**
-     * @Groups({"create", "show"})
+     * @Groups("create")
      *
      * @return int
      */
@@ -129,7 +129,7 @@ class Ad
     }
 
     /**
-     * @Groups("show")
+     * @Groups("show:description")
      *
      * @return string|null
      */
@@ -147,7 +147,7 @@ class Ad
     }
 
     /**
-     * @Groups("list")
+     * @Groups({"show", "list"})
      *
      * @return string
      */
@@ -159,7 +159,7 @@ class Ad
     /**
      * @return array
      *
-     * @Groups("show")
+     * @Groups("show:photos")
      */
     public function getPhotos(): array
     {
