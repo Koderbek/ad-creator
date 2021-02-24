@@ -6,6 +6,7 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Class Photo
@@ -28,6 +29,9 @@ class Photo
     /**
      * @var string
      * @ORM\Column(type="string")
+     *
+     * @Assert\NotBlank(message = "Link cannot be blank")
+     * @Assert\Url(message = "The url '{{ value }}' is not a valid url")
      *
      * @Groups("show")
      */

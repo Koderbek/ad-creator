@@ -7,6 +7,7 @@ namespace App\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Class Ad
@@ -30,6 +31,9 @@ class Ad
      * @var string
      * @ORM\Column(type="string", length=200)
      *
+     * @Assert\NotBlank(message = "Name cannot be blank")
+     * @Assert\Length(max = 200, maxMessage = "Name cannot be longer than {{ limit }} characters")
+     *
      * @Groups("show")
      */
     private $name;
@@ -37,6 +41,8 @@ class Ad
     /**
      * @var float
      * @ORM\Column(type="float")
+     *
+     * @Assert\NotBlank(message = "Price cannot be blank")
      *
      * @Groups("show")
      */
@@ -46,6 +52,8 @@ class Ad
      * @var string|null
      * @ORM\Column(type="string", nullable=true, length=1000)
      *
+     * @Assert\Length(max = 1000, maxMessage = "Description cannot be longer than {{ limit }} characters")
+     *
      * @Groups("show")
      */
     private $description;
@@ -53,6 +61,12 @@ class Ad
     /**
      * @var ArrayCollection|Photo[]
      * @ORM\OneToMany(targetEntity="App\Entity\Photo", mappedBy="ad", cascade={"all"})
+     *
+     * @Assert\NotNull(message = "Description cannot be blank")
+     * @Assert\Count(
+     *     min = 1, minMessage = "You must specify at least one photo",
+     *     max = 3, maxMessage = "You cannot specify more than {{ limit }} photos"
+     * )
      */
     private $photos;
 

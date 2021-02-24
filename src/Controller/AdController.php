@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Ad;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\ConstraintViolationListInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * Class AdController
@@ -20,6 +23,16 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class AdController extends AbstractController
 {
+    /**
+     * @var ArrayCollection
+     */
+    private ArrayCollection $errors;
+
+    public function __construct()
+    {
+        $this->errors = new ArrayCollection();
+    }
+
     /**
      * @param string $content
      *
@@ -34,23 +47,61 @@ class AdController extends AbstractController
     }
 
     /**
+     * @param ConstraintViolationListInterface $errorList
+     * @return false|string
+     */
+    private function serializeErrorData(ConstraintViolationListInterface $errorList)
+    {
+        for ($i = 0; $i < $errorList->count(); $i++) {
+            if ($errorList->has($i)) {
+                $this->errors->add([
+                    'code' => $errorList->get($i)->getCode(),
+                    'message' => $errorList->get($i)->getMessage()
+                ]);
+            }
+        }
+
+        return json_encode(['errors' => $this->errors->toArray()]);
+    }
+
+    /**
      * @Route("/", methods={"POST"})
      *
      * @param SerializerInterface $serializer
      * @param Request $request
      * @param EntityManagerInterface $em
+     * @param ValidatorInterface $validator
      *
      * @return Response
      */
-    public function new(SerializerInterface $serializer, Request $request, EntityManagerInterface $em): Response
-    {
-        $entity = $serializer->deserialize($request->getContent(), Ad::class,'json');
-        $em->persist($entity);
-        $em->flush();
+    public function new(
+        SerializerInterface $serializer,
+        Request $request,
+        EntityManagerInterface $em,
+        ValidatorInterface $validator
+    ): Response {
+        try {
+            $entity = $serializer->deserialize($request->getContent(), Ad::class,'json');
 
-        $json = $serializer->serialize($entity, "json", ['groups' => ["create"]]);
+            $errors = $validator->validate($entity);
+            if ($errors->count() > 0) {
+                return $this->createResponse($this->serializeErrorData($errors));
+            }
 
-        return $this->createResponse($json);
+            $em->persist($entity);
+            $em->flush();
+
+            $json = $serializer->serialize($entity, "json", ['groups' => ["create"]]);
+
+            return $this->createResponse($json);
+        } catch (\Throwable $exception) {
+            $this->errors->add([
+                'code' => $exception->getCode(),
+                'message' => $exception->getMessage()
+            ]);
+
+            return $this->createResponse(json_encode(['errors' => [$this->errors->toArray()]]));
+        }
     }
 
     /**

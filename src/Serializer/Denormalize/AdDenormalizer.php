@@ -6,6 +6,7 @@ namespace App\Serializer\Denormalize;
 
 use App\Entity\Ad;
 use App\Entity\Photo;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
@@ -27,9 +28,19 @@ class AdDenormalizer implements DenormalizerInterface
     {
         $entity = new Ad();
 
+        if (!isset($data['name'])) {
+            throw new HttpException(Response::HTTP_BAD_REQUEST, 'Name cannot be blank');
+        }
         $entity->setName($data['name']);
+
+        if (!isset($data['price'])) {
+            throw new HttpException(Response::HTTP_BAD_REQUEST, 'Price cannot be blank');
+        }
         $entity->setPrice($data['price']);
-        $entity->setDescription($data['description'] ?? null);
+
+        if (!isset($data['photos'])) {
+            throw new HttpException(Response::HTTP_BAD_REQUEST, 'Photos cannot be blank');
+        }
 
         foreach ($data['photos'] as $value) {
             $photo = new Photo();
@@ -38,6 +49,8 @@ class AdDenormalizer implements DenormalizerInterface
 
             $entity->addPhoto($photo);
         }
+
+        $entity->setDescription($data['description'] ?? null);
 
         return $entity;
     }
