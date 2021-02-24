@@ -6,6 +6,7 @@ namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * Class Ad
@@ -20,32 +21,40 @@ class Ad
      * @ORM\Column(type="integer")
      * @ORM\Id()
      * @ORM\GeneratedValue(strategy="AUTO")
+     *
+     * @Groups({"create", "show"})
      */
-    private int $id;
+    private $id;
 
     /**
      * @var string
      * @ORM\Column(type="string", length=200)
+     *
+     * @Groups("show")
      */
-    private string $name;
+    private $name;
 
     /**
      * @var float
      * @ORM\Column(type="float")
+     *
+     * @Groups("show")
      */
-    private float $price;
+    private $price;
 
     /**
      * @var string|null
      * @ORM\Column(type="string", nullable=true, length=1000)
+     *
+     * @Groups("show")
      */
-    private ?string $description;
+    private $description;
 
     /**
      * @var ArrayCollection|Photo[]
-     * @ORM\OneToMany(targetEntity="App\Entity\Photo", mappedBy="ad")
+     * @ORM\OneToMany(targetEntity="App\Entity\Photo", mappedBy="ad", cascade={"all"})
      */
-    private ArrayCollection $photos;
+    private $photos;
 
     public function __construct()
     {
@@ -117,18 +126,22 @@ class Ad
     }
 
     /**
-     * @return Photo[]|ArrayCollection
+     * @return array
+     *
+     * @Groups("show")
      */
-    public function getPhotos()
+    public function getPhotos(): array
     {
-        return $this->photos;
+        return array_map(static fn(Photo $photo) => $photo->getLink(), $this->photos->toArray());
     }
 
     /**
-     * @param Photo[]|ArrayCollection $photos
+     * @param Photo $photo
      */
-    public function setPhotos($photos): void
+    public function addPhoto(Photo $photo): void
     {
-        $this->photos = $photos;
+        if (!$this->photos->contains($photo)){
+            $this->photos->add($photo);
+        }
     }
 }

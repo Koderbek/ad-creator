@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * Class Photo
@@ -19,20 +20,25 @@ class Photo
      * @ORM\Column(type="integer")
      * @ORM\Id()
      * @ORM\GeneratedValue(strategy="AUTO")
+     *
+     * @Groups("show")
      */
-    private int $id;
+    private $id;
 
     /**
      * @var string
      * @ORM\Column(type="string")
+     *
+     * @Groups("show")
      */
-    private string $link;
+    private $link;
 
     /**
      * @var Ad
      * @ORM\ManyToOne(targetEntity="App\Entity\Ad", inversedBy="photos")
+     * @ORM\JoinColumn(name="ad_id", referencedColumnName="id", onDelete="CASCADE")
      */
-    private Ad $ad;
+    private $ad;
 
     /**
      * @return int
