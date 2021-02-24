@@ -105,17 +105,17 @@ class AdController extends AbstractController
     }
 
     /**
-     * @Route("/list/{page}", methods={"GET"}, requirements={"page": "\d+"})
+     * @Route("/list", methods={"GET"})
      *
-     * @param int $page
+     * @param Request $request
      * @param SerializerInterface $serializer
      * @param EntityManagerInterface $em
      *
      * @return Response
      */
-    public function index(int $page = 1, SerializerInterface $serializer, EntityManagerInterface $em): Response
+    public function index(Request $request, SerializerInterface $serializer, EntityManagerInterface $em): Response
     {
-        $entities = $em->getRepository(Ad::class)->paginate($page);
+        $entities = $em->getRepository(Ad::class)->findByFilter($request->query->all());
         $json = $serializer->serialize($entities, "json", ['groups' => ["list"]]);
 
         return $this->createResponse($json);
