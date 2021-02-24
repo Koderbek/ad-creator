@@ -13,7 +13,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * Class Ad
  * @package App\Entity
  *
- * @ORM\Entity()
+ * @ORM\Entity(repositoryClass="App\Repository\AdRepository")
  */
 class Ad
 {
@@ -22,8 +22,6 @@ class Ad
      * @ORM\Column(type="integer")
      * @ORM\Id()
      * @ORM\GeneratedValue(strategy="AUTO")
-     *
-     * @Groups({"create", "show"})
      */
     private $id;
 
@@ -33,8 +31,6 @@ class Ad
      *
      * @Assert\NotBlank(message = "Name cannot be blank")
      * @Assert\Length(max = 200, maxMessage = "Name cannot be longer than {{ limit }} characters")
-     *
-     * @Groups("show")
      */
     private $name;
 
@@ -43,18 +39,20 @@ class Ad
      * @ORM\Column(type="float")
      *
      * @Assert\NotBlank(message = "Price cannot be blank")
-     *
-     * @Groups("show")
      */
     private $price;
+
+    /**
+     * @var int
+     * @ORM\Column(type="integer")
+     */
+    private int $createDate;
 
     /**
      * @var string|null
      * @ORM\Column(type="string", nullable=true, length=1000)
      *
      * @Assert\Length(max = 1000, maxMessage = "Description cannot be longer than {{ limit }} characters")
-     *
-     * @Groups("show")
      */
     private $description;
 
@@ -73,9 +71,12 @@ class Ad
     public function __construct()
     {
         $this->photos = new ArrayCollection();
+        $this->createDate = time();
     }
 
     /**
+     * @Groups({"create", "show"})
+     *
      * @return int
      */
     public function getId(): int
@@ -92,6 +93,8 @@ class Ad
     }
 
     /**
+     * @Groups({"show", "list"})
+     *
      * @return string
      */
     public function getName(): string
@@ -108,6 +111,8 @@ class Ad
     }
 
     /**
+     * @Groups({"show", "list"})
+     *
      * @return float
      */
     public function getPrice(): float
@@ -124,6 +129,8 @@ class Ad
     }
 
     /**
+     * @Groups("show")
+     *
      * @return string|null
      */
     public function getDescription(): ?string
@@ -137,6 +144,16 @@ class Ad
     public function setDescription(?string $description): void
     {
         $this->description = $description;
+    }
+
+    /**
+     * @Groups("list")
+     *
+     * @return string
+     */
+    public function getMainPhoto(): string
+    {
+        return $this->photos->first()->getLink();
     }
 
     /**
@@ -157,5 +174,21 @@ class Ad
         if (!$this->photos->contains($photo)){
             $this->photos->add($photo);
         }
+    }
+
+    /**
+     * @return int
+     */
+    public function getCreateDate(): int
+    {
+        return $this->createDate;
+    }
+
+    /**
+     * @param int $createDate
+     */
+    public function setCreateDate(int $createDate): void
+    {
+        $this->createDate = $createDate;
     }
 }

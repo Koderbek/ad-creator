@@ -21,8 +21,6 @@ class Photo
      * @ORM\Column(type="integer")
      * @ORM\Id()
      * @ORM\GeneratedValue(strategy="AUTO")
-     *
-     * @Groups("show")
      */
     private $id;
 
@@ -32,8 +30,6 @@ class Photo
      *
      * @Assert\NotBlank(message = "Link cannot be blank")
      * @Assert\Url(message = "The url '{{ value }}' is not a valid url")
-     *
-     * @Groups("show")
      */
     private $link;
 
@@ -61,6 +57,8 @@ class Photo
     }
 
     /**
+     * @Groups("show")
+     *
      * @return string
      */
     public function getLink(): string
